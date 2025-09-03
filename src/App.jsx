@@ -17,6 +17,7 @@ import AgentCard from './components/AgentCard';
 import OutputModal from './components/OutputModal';
 import SettingsModal from './components/SettingsModal';
 import { SettingsProvider } from './context/SettingsContext';
+import LivePreview from './components/LivePreview';
 import { callGeminiAPI, AGENT_PROMPTS } from './api/gemini';
 
 const AGENTS = [
@@ -198,7 +199,7 @@ function App() {
             break;
         }
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+
       }
 
       setPipelineStatus('completed');
@@ -257,6 +258,12 @@ function App() {
             </div>
           )}
 
+          {pipelineStatus !== 'idle' && (
+            <LivePreview
+              currentAgent={currentAgentIndex >= 0 ? AGENTS[currentAgentIndex] : null}
+              currentOutput={currentAgentIndex >= 0 ? agentOutputs[AGENTS[currentAgentIndex].id] : null}
+            />
+          )}
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
             <input
               type="text"
