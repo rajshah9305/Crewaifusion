@@ -86,38 +86,41 @@ function App() {
   );
   const [agentOutputs, setAgentOutputs] = useState({});
   const [currentAgentIndex, setCurrentAgentIndex] = useState(-1);
+  const [initialIdea, setInitialIdea] = useState('');
+  const [ideaHistory, setIdeaHistory] = useState([]);
   const [error, setError] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalAgent, setModalAgent] = useState(null);
-  const [modalOutput, setModalOutput] = useState('');
+  const [modalOutput, setModalOutput] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const resetPipeline = useCallback(() => {
-    setPipelineStatus('idle');
+    setPipelineStatus("idle");
     setAgentStatuses(
       AGENTS.reduce((acc, agent) => {
-        acc[agent.id] = 'idle';
+        acc[agent.id] = "idle";
         return acc;
       }, {})
     );
     setAgentOutputs({});
     setCurrentAgentIndex(-1);
+    setIdeaHistory([]);
     setError(null);
     setModalOpen(false);
   }, []);
 
   const updateAgentStatus = useCallback((agentId, status) => {
-    setAgentStatuses(prev => ({
+    setAgentStatuses((prev) => ({
       ...prev,
-      [agentId]: status
+      [agentId]: status,
     }));
   }, []);
 
   const updateAgentOutput = useCallback((agentId, output) => {
-    setAgentOutputs(prev => ({
+    setAgentOutputs((prev) => ({
       ...prev,
-      [agentId]: output
+      [agentId]: output,
     }));
   }, []);
 
@@ -125,13 +128,13 @@ function App() {
     async (agent, index, context = {}) => {
       try {
         setCurrentAgentIndex(index);
-        updateAgentStatus(agent.id, 'working');
+        updateAgentStatus(agent.id, "working");
 
-        let prompt = '';
+        let prompt = "";
 
         switch (agent.id) {
-          case 'idea-generation':
-            prompt = AGENT_PROMPTS.ideaGeneration();
+          case "idea-generation":
+            prompt = initialIdea ? `Title: ${initialIdea}\nDescription: ${initialIdea}` : AGENT_PROMPTS.ideaGeneration(ideaHistory);
             break;
           case 'app-requirements':
             prompt = AGENT_PROMPTS.appRequirements(context.idea || '');
@@ -185,6 +188,7 @@ function App() {
         switch (agent.id) {
           case 'idea-generation':
             context.idea = output;
+            setIdeaHistory((prev) => [...prev, output.split("\n")[0].replace("Title: ", "")]);
             break;
           case 'app-requirements':
             context.requirements = output;
@@ -254,6 +258,13 @@ function App() {
           )}
 
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <input
+              type="text"
+              placeholder="Enter your app idea (optional)"
+              value={initialIdea}
+              onChange={(e) => setInitialIdea(e.target.value)}
+              className="w-full max-w-md px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
             <button
               onClick={executePipeline}
               disabled={!isApiKeyConfigured || pipelineStatus === 'running'}
@@ -432,4 +443,3 @@ function App() {
 }
 
 export default App;
-
