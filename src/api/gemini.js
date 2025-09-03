@@ -63,9 +63,13 @@ export async function callGeminiAPI(prompt, maxRetries = 3) {
 }
 
 export const AGENT_PROMPTS = {
-  ideaGeneration: () => `
-Generate a unique and marketable full-stack application idea that solves a real-world problem.
-The idea should be innovative, technically feasible, and have clear business value.
+  ideaGeneration: (ideaHistory = []) => {
+    const historyPrompt = ideaHistory.length > 0
+      ? `\nPreviously generated ideas (avoid similar concepts):\n${ideaHistory.map((idea, index) => `${index + 1}. ${idea}`).join("\n")}\n`
+      : "";
+
+    return `
+Generate a unique, marketable, and diverse full-stack application idea that solves a real-world problem. The idea should be innovative, technically feasible, and have clear business value. Ensure the idea is distinct from common themes like 'skill exchange platforms' and explores a wide range of industries or user needs. Focus on novelty and practical application.${historyPrompt}
 
 Format your response exactly as:
 Title: [App Title]
@@ -77,7 +81,8 @@ Make sure the idea is:
 - Addresses a genuine pain point
 - Has clear monetization potential
 - Uses modern web technologies
-`,
+`;
+  },
 
   appRequirements: idea => `
 Based on the app idea "${idea}", create a comprehensive requirements document.
@@ -278,4 +283,3 @@ Provide example unit tests for:
 Provide complete, runnable test examples with proper setup and configuration.
 `
 };
-
